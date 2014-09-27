@@ -32,10 +32,10 @@ computers.execute_oscommand = function(cmdline, pos, player)
 	if cmdline == nil then return end
 	local command = string.match(cmdline, "([^ ]+) *")
 	if command == nil then return end
-	local message = command..": command not found"
+	local message = command..": command not found (try help)"
 	local continue = false
 	
-	print("pass command to computer : "..command)
+	print(player:get_player_name().." passed command to computer : "..command)
 	if computers.registered_commands[command] then
 		local func = computers.registered_commands[command].exe
 		if func then
@@ -44,7 +44,7 @@ computers.execute_oscommand = function(cmdline, pos, player)
 		end
 	end
 	
-	--minetest.chat_send_player(player:get_player_name(), message)
+	minetest.chat_send_player(player:get_player_name(), message)
 	--display message
 	local meta = minetest.env:get_meta(pos)
 	meta:set_string("infotext", message)
@@ -65,148 +65,146 @@ minetest.register_craft({
 		{'technology:button', 'technology:button', 'technology:button'},
 	}
 })
-
+--homedecor:plastic_sheeting
 minetest.register_craft({
 	output = default_laptop,
 	recipe = {
-		{'technology:flat_screen_off', "technology:wire"},
-		{'technology:electronic_card', "technology:wire"},
-		{'technology:keyboard', "technology:wire"},
+		{ 'technology:flat_screen_off', 'default:mese_crystal'},
+		{ 'technology:electronic_card', 'default:mese_crystal'},
+		{ 'computers:keyboard', '' },
 	}
 })
 
 -- node defs
 
 minetest.register_node("computers:keyboard", {
-    description = "keyboard",
-    stack_max = 1,
-    node_placement_prediction = "",
-    paramtype = "light",
+	description = "keyboard",
+	stack_max = 5,
+	node_placement_prediction = "",
+	paramtype = "light",
 	light_source = 3,
-    paramtype2 = "facedir",
-    drawtype = "nodebox",
-    node_box = {type = "fixed", fixed = {-0.44, -0.5, -0.44,   0.44, -0.45, -0.02}},
-    selection_box = {type = "fixed", fixed = {-0.44, -0.5, -0.44,   0.44, -0.45, -0.02}},
-    tiles = {"keyboard_top.png", "keyboard_bottom.png", "keyboard_side.png", "keyboard_side.png", "keyboard_side.png", "keyboard_side.png"},
-    walkable = true,
-    groups = {choppy=2, dig_immediate=2},
+	paramtype2 = "facedir",
+	drawtype = "nodebox",
+	node_box = {type = "fixed", fixed = {-0.44, -0.5, -0.44,   0.44, -0.45, -0.02}},
+	selection_box = {type = "fixed", fixed = {-0.44, -0.5, -0.44,   0.44, -0.45, -0.02}},
+	tiles = {"keyboard_top.png", "keyboard_bottom.png", "keyboard_side.png", "keyboard_side.png", "keyboard_side.png", "keyboard_side.png"},
+	walkable = true,
+	groups = {choppy=2, dig_immediate=2},
 })
 
 minetest.register_node("computers:laptop_open", {
-    description = "Laptop from computers mod",
-    stack_max = 1,
-    node_placement_prediction = "",
-    paramtype = "light",
+	description = 'Laptop',
+	stack_max = 1,
+	node_placement_prediction = "",
+	paramtype = "light",
 	light_source = 4,
-    paramtype2 = "facedir",
-    drawtype = "nodebox",
-    node_box = {type = "fixed", fixed = {    	
-    	-- top part
-    	{-0.3, -0.45, 0.05,   0.3, 0.05, 0.1},
-    	-- bottom part
-    	{-0.3, -0.5, -0.45,     0.3, -0.45, 0.075},
-    }},
-    selection_box = {type = "fixed", fixed = {
-    	-- top part
-    	{-0.3, -0.45, 0.05,   0.3, 0.05, 0.1},
-    	-- bottom part
-    	{-0.3, -0.5, -0.45,     0.3, -0.45, 0.075},
-    }},
-    tiles = {"laptop_top.png", "laptop_bottom.png", "laptop_left.png", "laptop_right.png", "laptop_back.png", {
+	paramtype2 = "facedir",
+	drawtype = "nodebox",
+	node_box = {type = "fixed", fixed = {    	
+		-- top part
+		{-0.3, -0.45, 0.05,   0.3, 0.05, 0.1},
+		-- bottom part
+		{-0.3, -0.5, -0.45,     0.3, -0.45, 0.075},
+	}},
+	selection_box = {type = "fixed", fixed = {
+		-- top part
+		{-0.3, -0.45, 0.05,   0.3, 0.05, 0.1},
+		-- bottom part
+		{-0.3, -0.5, -0.45,     0.3, -0.45, 0.075},
+	}},
+	tiles = {"laptop_top.png", "laptop_bottom.png", "laptop_left.png", "laptop_right.png", "laptop_back.png", {
 			image="laptop_front_general.png",
 			backface_culling=false,
 			animation={type="vertical_frames", aspect_w=128, aspect_h=128, length=4.5}
 		}
 	},
-    walkable = true,
-    groups = {choppy=2, dig_immediate=2},
+	walkable = true,
+	groups = {choppy=2, dig_immediate=2},
 	drop = default_laptop,
-    on_punch = function(pos, node, puncher)
-    	node.name = "computers:laptop_close"
-    	minetest.env:set_node(pos, node)
-    end,
-    on_construct = function(pos)
-    	--set metadata
+	on_punch = function(pos, node, puncher)
+		node.name = "computers:laptop_close"
+		minetest.env:set_node(pos, node)
+	end,
+	on_construct = function(pos)
+		--set metadata
 		local meta = minetest.env:get_meta(pos)
 		meta:set_string("formspec", "field[text;;${text}]")
 		meta:set_string("infotext", welcome_message)
 	end,
-    on_receive_fields = computer_action,
+	on_receive_fields = computer_action,
 })
 
 laptop_open_action = function(pos, node, puncher)
-    	--set opened computer
-    	node.name = "computers:laptop_open"
-    	minetest.env:set_node(pos, node)
-    	--set metadata
-		local meta = minetest.env:get_meta(pos)
-		meta:set_string("formspec", "field[text;;${text}]")
-		meta:set_string("infotext", welcome_message)
-    end
+	--set opened computer
+	node.name = "computers:laptop_open"
+	minetest.env:set_node(pos, node)
+	--set metadata
+	local meta = minetest.env:get_meta(pos)
+	meta:set_string("formspec", "field[text;;${text}]")
+	meta:set_string("infotext", welcome_message)
+end
 
 minetest.register_node("computers:laptop_close", {
-    description = "Laptop from computers mod",
-    stack_max = 1,
-    node_placement_prediction = "",
-    paramtype = "light",
-    paramtype2 = "facedir",
-    drawtype = "nodebox",
-    node_box = {type = "fixed", fixed = {
-    	-- bottom part
-    	{-0.3, -0.5, -0.45,     0.3, -0.4, 0.075},
-    }},
-    selection_box = {type = "fixed", fixed = {-0.3, -0.5, -0.45,     0.3, -0.4, 0.075},},
-    tiles = {"laptop_cover.png", "laptop_bottom.png", "laptop_left.png", "laptop_right.png", "laptop_back.png", {
+	description = 'Laptop',
+	stack_max = 1,
+	node_placement_prediction = "",
+	paramtype = "light",
+	paramtype2 = "facedir",
+	drawtype = "nodebox",
+	node_box = {type = "fixed", fixed = {
+		-- bottom part
+		{-0.3, -0.5, -0.45,     0.3, -0.4, 0.075},
+	}},
+	selection_box = {type = "fixed", fixed = {-0.3, -0.5, -0.45,     0.3, -0.4, 0.075},},
+	tiles = {"laptop_cover.png", "laptop_bottom.png", "laptop_left.png", "laptop_right.png", "laptop_back.png", {
 			image="laptop_front_general.png",
 			backface_culling=false,
 			animation={type="vertical_frames", aspect_w=128, aspect_h=128, length=4.5}
 		}
 	},
-    walkable = true,
-    groups = {choppy=2, dig_immediate=2, not_in_creative_inventory=1},
+	walkable = true,
+	groups = {choppy=2, dig_immediate=2, not_in_creative_inventory=1},
 	drop = default_laptop,
-    
-    on_punch = laptop_open_action,
-    on_rightclick = laptop_open_action,
+
+	on_punch = laptop_open_action,
+	on_rightclick = laptop_open_action,
 })
 
 minetest.register_node("computers:laptop_connect", {
-    inventory_image = "laptop_wielded.png",
-    wield_image = "laptop_wielded.png",
-    stack_max = 1,
-    node_placement_prediction = "",
-    paramtype = "light",
+	inventory_image = "laptop_wielded.png",
+	wield_image = "laptop_wielded.png",
+	stack_max = 1,
+	node_placement_prediction = "",
+	paramtype = "light",
 	light_source = 6,
-    paramtype2 = "facedir",
-    drawtype = "nodebox",
-    node_box = {type = "fixed", fixed = {    	
-    	-- top part
-    	{-0.3, -0.45, 0.05,   0.3, 0.05, 0.1},
-    	-- bottom part
-    	{-0.3, -0.5, -0.45,     0.3, -0.45, 0.075},
-    }},
-    selection_box = {type = "fixed", fixed = {
-    	-- top part
-    	{-0.3, -0.45, 0.05,   0.3, 0.05, 0.1},
-    	-- bottom part
-    	{-0.3, -0.5, -0.45,     0.3, -0.45, 0.075},
-    }},
-    tiles = {"laptop_top.png", "laptop_bottom.png", "laptop_left.png", "laptop_right.png", "laptop_back.png", {
+	paramtype2 = "facedir",
+	drawtype = "nodebox",
+	node_box = {type = "fixed", fixed = {    	
+		-- top part
+		{-0.3, -0.45, 0.05,   0.3, 0.05, 0.1},
+		-- bottom part
+		{-0.3, -0.5, -0.45,     0.3, -0.45, 0.075},
+	}},
+	selection_box = {type = "fixed", fixed = {
+		-- top part
+		{-0.3, -0.45, 0.05,   0.3, 0.05, 0.1},
+		-- bottom part
+		{-0.3, -0.5, -0.45,     0.3, -0.45, 0.075},
+	}},
+	tiles = {"laptop_top.png", "laptop_bottom.png", "laptop_left.png", "laptop_right.png", "laptop_back.png", {
 			image="laptop_front_connect.png",
 			backface_culling=false,
 			animation={type="vertical_frames", aspect_w=128, aspect_h=128, length=4.5}
 		}
 	},
-    walkable = true,
-    groups = {choppy=2, dig_immediate=2, not_in_creative_inventory=1},
+	walkable = true,
+	groups = {choppy=2, dig_immediate=2, not_in_creative_inventory=1},
 	drop = default_laptop,
-    
-    on_punch = function(pos, node, puncher)
-    	node.name = "computers:laptop_close"
-    	minetest.env:set_node(pos, node)
-    end,
-    
-    on_receive_fields = computers.oscommand_com_main
-})
 
-minetest.register_alias("computers:laptop", "computers:laptop_open")
+	on_punch = function(pos, node, puncher)
+		node.name = "computers:laptop_close"
+		minetest.env:set_node(pos, node)
+	end,
+
+	on_receive_fields = computers.oscommand_com_main
+})

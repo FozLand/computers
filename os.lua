@@ -7,6 +7,18 @@ local connected_laptop = "computers:laptop_connect"
 local welcome_message = "/* welcome to cybertronic OS v2.2 */"
 local default_laptop = opened_laptop
 
+local function floormod ( x, y )
+	return (math.floor(x) % y);
+end
+
+local function get_time ()
+	local secs = (60*60*24*minetest.env:get_timeofday());
+	local s = floormod(secs, 60);
+	local m = floormod(secs/60, 60);
+	local h = floormod(secs/3600, 60);
+	return ("%02d:%02d"):format(h, m);
+end
+
 computers.register_oscommand("help", "get help about a function", "help [COMMAND]", 
 function(cmdline, pos, player)
 	local command = string.match(cmdline, "help *(.+)")
@@ -31,7 +43,7 @@ function(cmdline, pos, player)
 end)
  
 computers.register_oscommand("time", "get the time of day", "time", function(cmdline, pos, player)
-	local message = "local time : "..(minetest.env:get_timeofday()*24)
+	local message = "local time : "..get_time()
 	return message, true
 end)
 
@@ -90,13 +102,13 @@ function(cmdline, pos, player)
 	return message, true
 end)
 
+--[[ tempor disabled
 computers.register_oscommand("mat", "get the material name of a bloc next to the computer", "mat [z+1] [z-1] [y+1] [y-1] [x+1] [x-1]", 
 function(cmdline, pos, player)
 	local message = "mat: error: incompatible driver (in devel program)"
 	return message, false
 end)
-
-computers.register_oscommand("com", "create a connexion between two computers", "com [-c COODINATES  make a connexion between this computer and an other at coordinates]\n    [-p PLAYERNAME  make a connexion between this computer and the closest computer to the player]\nWhen connected, type EOL to disconnect", 
+computers.register_oscommand("com", "create a connexion between two computers", "com [-c COODINATES  make a connection between this computer and an other at coordinates]\n    [-p PLAYERNAME  make a connexion between this computer and the closest computer to the player]\nWhen connected, type EOL to disconnect", 
 function(cmdline, pos, player)
 	local command, opt = string.match(cmdline, "^([^ ]+) *([^ ]+)")
 	local node, remote_pos
@@ -224,7 +236,6 @@ computers.oscommand_com_main = function(pos, formname, fields, sender)
 	end
 end
 
-
 computers.register_oscommand("restart", "reload all laptops system's", "restart",
 function (cmdline, pos, player)
 	print("[computers]: "..player:get_player_name().." has initialized a global computers system restarting. Minetest will redo file os.lua")
@@ -236,3 +247,4 @@ function (cmdline, pos, player)
 	print("[computers]: all computers restarted")
 	return welcome_message, true
 end)
+]]--
